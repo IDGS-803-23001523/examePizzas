@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block container %}
+
+{% import "_macros.html" as macros %}
+
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-6">Consultar Ventas por Mes</h1>
+
+    <!-- Formulario para seleccionar mes -->
+    <div class="border p-4 mb-6">
+        <form method="POST" action="{{ url_for('ventas_mes') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="flex items-end gap-4">
+                <div class="w-64">
+                    <label class="block mb-2 font-bold">Selecciona un mes:</label>
+                    <select name="mes" class="w-full border p-2" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="enero" {% if mes_seleccionado == 'enero' %}selected{% endif %}>Enero</option>
+                        <option value="febrero" {% if mes_seleccionado == 'febrero' %}selected{% endif %}>Febrero</option>
+                        <option value="marzo" {% if mes_seleccionado == 'marzo' %}selected{% endif %}>Marzo</option>
+                        <option value="abril" {% if mes_seleccionado == 'abril' %}selected{% endif %}>Abril</option>
+                        <option value="mayo" {% if mes_seleccionado == 'mayo' %}selected{% endif %}>Mayo</option>
+                        <option value="junio" {% if mes_seleccionado == 'junio' %}selected{% endif %}>Junio</option>
+                        <option value="julio" {% if mes_seleccionado == 'julio' %}selected{% endif %}>Julio</option>
+                        <option value="agosto" {% if mes_seleccionado == 'agosto' %}selected{% endif %}>Agosto</option>
+                        <option value="septiembre" {% if mes_seleccionado == 'septiembre' %}selected{% endif %}>Septiembre</option>
+                        <option value="octubre" {% if mes_seleccionado == 'octubre' %}selected{% endif %}>Octubre</option>
+                        <option value="noviembre" {% if mes_seleccionado == 'noviembre' %}selected{% endif %}>Noviembre</option>
+                        <option value="diciembre" {% if mes_seleccionado == 'diciembre' %}selected{% endif %}>Diciembre</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2">Consultar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if mes_seleccionado %}
+    <!-- Resultados de la consulta -->
+    <div class="border p-4">
+        <h2 class="text-xl font-bold mb-4">Ventas del mes de {{ mes_seleccionado|capitalize }}</h2>
+        
+        {% if ventas %}
+            {% for venta in ventas %}
+            <div class="mb-6 border-b pb-4">
+                <!-- Encabezado del pedido -->
+                <div class="bg-gray-100 p-3 mb-3">
+                    <p><strong>Pedido #{{ venta.id }}</strong> - {{ venta.cliente.nombre }} - {{ venta.telefono_cliente }} - {{ venta.fecha.strftime('%d/%m/%Y %H:%M') }} - <strong>Total: ${{ venta.total }}</strong></p>
+                </div>
+                
+                <!-- Detalle de pizzas de este pedido -->
+                <table class="w-full border-collapse border ml-4" style="width: 95%;">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="border p-2 text-left">Pizza</th>
+                            <th class="border p-2 text-left">Ingredientes</th>
+                            <th class="border p-2 text-left">Cantidad</th>
+                            <th class="border p-2 text-left">Precio Unit.</th>
+                            <th class="border p-2 text-left">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detalle in venta.detalles %}
+                        <tr>
+                            <td class="border p-2">{{ detalle.pizza.nombre }}</td>
+                            <td class="border p-2">{{ detalle.pizza.ingredientes }}</td>
+                            <td class="border p-2">{{ detalle.cantidad }}</td>
+                            <td class="border p-2">${{ detalle.pizza.precio }}</td>
+                            <td class="border p-2">${{ detalle.subtotal }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+            
+            <!-- Total acumulado del mes -->
+            <div class="mt-4 p-3 bg-blue-100 font-bold text-right">
+                Total acumulado del mes: ${{ total }}
+            </div>
+        {% else %}
+        <p class="text-center p-4">No hay ventas registradas para este mes</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Mensajes Flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="fixed top-4 right-4 p-4 rounded {% if category == 'success' %}bg-green-500{% else %}bg-red-500{% endif %} text-white">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% macro campoNuevo(field) %}
+<div class="mb-4">
+    <label class="block mb-1">{{ field.label.text }}</label>
+    {{ field(class="w-full border p-2", **kwargs) }}
+    {% if field.errors %}
+        {% for error in field.errors %}
+            <div class="text-red-600 text-sm mt-1">{{ error }}</div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endmacro %}

@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block container %}
+
+{% import "_macros.html" as macros %}
+
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-6">Consultar Ventas por Día</h1>
+
+    <!-- Formulario para seleccionar día -->
+    <div class="border p-4 mb-6">
+        <form method="POST" action="{{ url_for('ventas_dia') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="flex items-end gap-4">
+                <div class="w-64">
+                    <label class="block mb-2 font-bold">Selecciona un día:</label>
+                    <select name="dia" class="w-full border p-2" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="lunes" {% if dia_seleccionado == 'lunes' %}selected{% endif %}>Lunes</option>
+                        <option value="martes" {% if dia_seleccionado == 'martes' %}selected{% endif %}>Martes</option>
+                        <option value="miércoles" {% if dia_seleccionado == 'miércoles' %}selected{% endif %}>Miércoles</option>
+                        <option value="jueves" {% if dia_seleccionado == 'jueves' %}selected{% endif %}>Jueves</option>
+                        <option value="viernes" {% if dia_seleccionado == 'viernes' %}selected{% endif %}>Viernes</option>
+                        <option value="sábado" {% if dia_seleccionado == 'sábado' %}selected{% endif %}>Sábado</option>
+                        <option value="domingo" {% if dia_seleccionado == 'domingo' %}selected{% endif %}>Domingo</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2">Consultar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resultados de la consulta (si hay) -->
+    {% if dia_seleccionado %}
+    <div class="border p-4">
+        <h2 class="text-xl font-bold mb-4">Ventas del {{ dia_seleccionado }} de la última semana</h2>
+        
+        {% if ventas %}
+            {% for venta in ventas %}
+            <div class="mb-4 p-3 bg-gray-50">
+                <p><strong>Pedido #{{ venta.id }}</strong> - {{ venta.cliente.nombre }} - {{ venta.cliente.telefono }} - {{ venta.fecha.strftime('%d/%m/%Y %H:%M') }} - <strong>${{ venta.total }}</strong></p>
+            </div>
+            {% endfor %}
+            
+            <div class="mt-4 p-3 bg-blue-100 font-bold">
+                Total acumulado: ${{ total }}
+            </div>
+        {% else %}
+        <p class="text-center p-4">No hay ventas registradas para los {{ dia_seleccionado }}s de la última semana</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Mensajes Flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="fixed top-4 right-4 p-4 rounded {% if category == 'success' %}bg-green-500{% else %}bg-red-500{% endif %} text-white">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% endblock %}

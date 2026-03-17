@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block container %}
+
+<div class="flex flex-col items-center mt-7 min-h-screen">
+    <div class="text-center">
+        <h1 class="text-3xl font-bold mb-8">Bienvenido al sistema de pedidos de la pizzeria</h1>
+        
+        <div class="mb-8">
+            <img src="{{ url_for('static', filename='img/imagenPizzeria.png') }}" 
+                 alt="Pizzería" 
+                 class="mx-auto max-w-full h-auto rounded-lg shadow-lg"
+                 style="max-width: 600px;">
+        </div>
+    </div>
+</div>
+
+{% endblock %}

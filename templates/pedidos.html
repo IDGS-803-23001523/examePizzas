@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+
+{% block container %}
+
+{% import "_macros.html" as macros %}
+
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-6">Nuevo Pedido</h1>
+
+    <!-- Formulario único con dos columnas -->
+    <div class="border p-4">
+        <form method="POST" action="{{ url_for('pedidos') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="flex flex-wrap -mx-2">
+                <!-- Columna izquierda - Datos del Cliente (persisten) -->
+                <div class="w-full md:w-1/2 px-2">
+                    <h2 class="text-xl font-bold mb-4">Datos del Cliente</h2>
+                    {{ macros.campoNuevo(form.nombre) }}
+                    {{ macros.campoNuevo(form.direccion) }}
+                    {{ macros.campoNuevo(form.telefono) }}
+                </div>
+                
+                <!-- Columna derecha - Datos de la Pizza -->
+                <div class="w-full md:w-1/2 px-2">
+                    <h2 class="text-xl font-bold mb-4">Datos de la Pizza</h2>
+                    
+                    <div class="mb-4">
+                        <label class="block mb-2">Tamaño:</label>
+                        <div>
+                            <div class="mb-1">
+                                <input type="radio" name="tamaño" value="pequena" id="pequena" required>
+                                <label for="pequena">Pequeña - $80</label>
+                            </div>
+                            <div class="mb-1">
+                                <input type="radio" name="tamaño" value="mediana" id="mediana" required>
+                                <label for="mediana">Mediana - $120</label>
+                            </div>
+                            <div class="mb-1">
+                                <input type="radio" name="tamaño" value="grande" id="grande" required>
+                                <label for="grande">Grande - $160</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block mb-2">Ingredientes:</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><input type="checkbox" name="ingredientes" value="jamon"> Jamón - $10</div>
+                            <div><input type="checkbox" name="ingredientes" value="pepperoni"> Pepperoni - $10</div>
+                            <div><input type="checkbox" name="ingredientes" value="champiñones"> Champiñones - $10</div>
+                            <div><input type="checkbox" name="ingredientes" value="cebolla"> Cebolla - $10</div>
+                            <div><input type="checkbox" name="ingredientes" value="pimiento"> Pimiento - $10</div>
+                            <div><input type="checkbox" name="ingredientes" value="aceitunas"> Aceitunas - $10</div>
+                            <div><input type="checkbox" name="ingredientes" value="piña"> Piña - $10</div>
+                            <div><input type="checkbox" name="ingredientes" value="extra_queso"> Extra Queso - $10</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block mb-1">Número de pizzas:</label>
+                        <input type="number" name="numero_pizzas" min="1" value="1" class="border p-2 w-32" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Agregar -->
+            <div class="text-center mt-6">
+                <button type="submit" name="accion" value="agregar" class="bg-green-500 text-white px-6 py-3">Agregar al Pedido</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de detalle del pedido -->
+    <div class="border p-4 mt-6">
+        <h2 class="text-xl font-bold mb-4">Detalle del Pedido</h2>
+        
+        <table class="w-full border-collapse border">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border p-2 text-left">Tamaño</th>
+                    <th class="border p-2 text-left">Ingredientes</th>
+                    <th class="border p-2 text-left">Cantidad</th>
+                    <th class="border p-2 text-left">Subtotal</th>
+                    <th class="border p-2 text-left">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in pedido_temporal %}
+                <tr>
+                    <td class="border p-2">{{ item.tamaño }}</td>
+                    <td class="border p-2">{{ item.ingredientes }}</td>
+                    <td class="border p-2">{{ item.cantidad }}</td>
+                    <td class="border p-2">${{ item.subtotal }}</td>
+                    <td class="border p-2">
+                        <form method="POST" action="{{ url_for('quitar_pizza') }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <button type="submit" class="bg-red-500 text-white px-3 py-1 text-sm">Quitar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="border p-4 text-center">No hay pizzas agregadas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="font-bold">
+                    <td colspan="3" class="border p-2 text-right">Total:</td>
+                    <td class="border p-2">${{ total }}</td>
+                    <td class="border p-2"></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Botón Terminar -->
+        <div class="mt-4 text-right">
+            <form method="POST" action="{{ url_for('terminar_pedido') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="bg-blue-500 text-white px-6 py-3">Terminar Pedido</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Mensajes Flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="fixed top-4 right-4 p-4 rounded {% if category == 'success' %}bg-green-500{% else %}bg-red-500{% endif %} text-white">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% endblock %}
